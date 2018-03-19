@@ -48,6 +48,7 @@ sparql_endpoint = 'iot-registry/api/queries/execute/global'
 url = fiesta_base_url + sparql_endpoint
 
 sparql = SPARQLWrapper(url)
+# the reason this doesn't work is that there is no authorization information in the request
 
 sparql.setQuery(sparql_query)
 
