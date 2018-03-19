@@ -1,0 +1,47 @@
+PREFIX iot-lite: <http://purl.oclc.org/NET/UNIS/fiware/iot-lite#>
+PREFIX m3-lite: <http://purl.org/iot/vocab/m3-lite#>
+PREFIX ssn: <http://purl.oclc.org/NET/ssnx/ssn#>
+PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dul:  <http://www.loa.istc.cnr.it/ontologies/DUL.owl#>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX sics: <http://smart-ics.ee.surrey.ac.uk/fiesta-iot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?sensingDevice ?qk ?lat ?long
+
+WHERE {
+  ?sensingDevice iot-lite:hasQuantityKind/rdf:type ?qk .
+  values ?qk {m3-lite:Temperature m3-lite:AirTemperature m3-lite:RoomTemperature} .
+  ?sensingDevice iot-lite:isSubSystemOf ?device .
+  ?device a ssn:Device .
+  ?device ssn:onPlatform ?platform .
+  ?platform geo:location ?point .
+  ?point geo:lat ?lat .
+  ?point geo:long ?long .
+#   ?observation ssn:observedBy ?sensingDevice .
+#   ?observation ssn:observationalResult ?sensorOutput .
+#   ?sensorOutput ssn:hasValue ?obsValue .
+#   ?obsValue dul:hasDataValue ?dataValue .
+#   ?observation ssn:observationSamplingTime ?instant .
+#   ?instant time:inXSDDateTime ?dateTime
+# .
+# #set interval
+# FILTER (
+#     ( xsd:dateTime(?dateTime) > xsd:dateTime("2018-02-15T00:00:00Z"))
+#   &&  ( xsd:dateTime(?dateTime) < xsd:dateTime("2018-02-16T00:00:00Z"))
+# ) 
+  #set location
+# .
+# FILTER (
+#        ( xsd:double(?lat) >= "0"^^xsd:double)
+#  &&    ( xsd:double(?lat) <= "60"^^xsd:double)
+#  &&    ( xsd:double(?long) >= "0"^^xsd:double)
+#   &&    ( xsd:double(?long) >= "-6"^^xsd:double)
+# ) .
+}
+
+ORDER BY ?sensingDevice ASC(?platform)
+
+LIMIT 10
