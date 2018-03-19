@@ -1,15 +1,11 @@
 {
-    "name": "d3showcase_git",
+    "name": "fiestaiot",
     "version": "0.0.1",
-    "description": "showcase for d3, crossfilter and cd for a git repo",
+    "description": "showcase for d3, crossfilter and cd for fiesta iot",
     "license": "MIT",
     "author": {
-        "name": "Tobias Adolph",
-        "email": "mail@tobiasadolph.de"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://gitlab.lrz.de/di72jiv/d3showcase_git"
+        "name": "Tobias Weber",
+        "email": "weber@lrz.de"
     },
     "dependencies": {
         "bootstrap": "latest",
