@@ -1,1 +1,1 @@
-curl  --request POST --header "Content-Type: application/json"  --header "X-OpenAM-Username: USERNAME"  --header "X-OpenAM-Password: PASSWORD" --data "{}" https://platform.fiesta-iot.eu/openam/json/authenticate > fiesta-token.json
+curl  --request POST --header "Content-Type: application/json"  --header "X-OpenAM-Username: $FIESTA_USERNAME"  --header "X-OpenAM-Password: $FIESTA_PASSWORD" --data "{}" https://platform.fiesta-iot.eu/openam/json/authenticate > fiesta-token.json
