@@ -1,0 +1,52 @@
+PREFIX iot-lite: <http://purl.oclc.org/NET/UNIS/fiware/iot-lite#>
+PREFIX m3-lite: <http://purl.org/iot/vocab/m3-lite#>
+PREFIX ssn: <http://purl.oclc.org/NET/ssnx/ssn#>
+PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dul:  <http://www.loa.istc.cnr.it/ontologies/DUL.owl#>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX sics: <http://smart-ics.ee.surrey.ac.uk/fiesta-iot#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?sensingDevice ?qk ?dataValue ?dateTime
+
+WHERE {
+  ?observation ssn:observedBy ?sensingDevice .
+  ?observation ssn:observedProperty/rdf:type ?qk .
+  VALUES ?qk {m3-lite:Temperature m3-lite:AirTemperature m3-lite:RoomTemperature}  
+  ?observation ssn:observationSamplingTime ?instant .
+  ?instant time:inXSDDateTime ?dateTime .
+  ?observation geo:location ?point .
+  ?point geo:lat ?lat .
+  ?point geo:long ?long .
+  ?observation ssn:observationResult ?sensorOutput .
+  ?sensorOutput ssn:hasValue ?obsValue .
+  ?obsValue dul:hasDataValue ?dataValue .
+#  ?sensingDevice a m3-lite:EnergyMeter .
+#  ?sensingDevice iot-lite:hasQuantityKind ?qk .
+#  ?qk a m3-lite:Power .
+#  ?sensingDevice iot-lite:hasUnit ?unit .
+#  ?sensingDevice iot-lite:isSubSystemOf ?device .
+#  ?device ssn:hasSubSystem ?sensingDevice .
+#  ?device a ssn:Device .
+#  ?device ssn:onPlatform ?platform .
+#  ?platform geo:location ?point .
+#  ?obsevation ssn:observedProperty ?qk .
+#  ?qk a m3-lite:Temperature .
+#  ?obsevation ssn:observedProperty/rdf:type m3-lite:Power .
+#  values ?qk {m3-lite:Temperature m3-lite:AirTemperature m3-lite:RoomTemperature} .
+#  FILTER (
+#      ( xsd:dateTime(?dateTime) > xsd:dateTime("2018-02-15T00:00:00Z"))
+#    &&  ( xsd:dateTime(?dateTime) < xsd:dateTime("2018-02-16T00:00:00Z"))
+#  ) 
+#  .
+#  FILTER (
+#         ( xsd:double(?lat) >= "0"^^xsd:double)
+#   &&    ( xsd:double(?lat) <= "60"^^xsd:double)
+#   &&    ( xsd:double(?long) <= "0"^^xsd:double)
+#   &&    ( xsd:double(?long) >= "-6"^^xsd:double)
+#  ) 
+}
+ORDER BY ?sensingDevice ASC(?dateTime)
+LIMIT 10
