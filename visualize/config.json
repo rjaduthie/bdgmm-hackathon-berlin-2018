@@ -1,0 +1,8 @@
+{ 
+    "datadir": "../data/",
+    "charts": {
+        "Sensors": "true",
+        "Datetime": "true",
+        "dataTable": "true"
+    }
+}

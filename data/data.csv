@@ -1,4 +1,4 @@
-ssn:Sensor,ssn:Observation,xsd:dateTime,dataValue,internal
+Sensor,Observation,dateTime,dataValue,internal
 sensor1,observation1,27.02.2018T12:00:01Z,7.03,true
 sensor2,observation2,27.02.2018T12:00:01Z,7.04,false
 sensor3,observation3,28.02.2018T12:00:01Z,-8.3,true
