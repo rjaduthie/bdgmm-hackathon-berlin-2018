@@ -2,12 +2,11 @@
 # - sparql-client package...but the documentation is missing
 # - sparqlwrapper
 
-from SPARQLWrapper import SPARQLWrapper, JSON
+from SPARQLWrapper import SPARQLWrapper, JSON, CSV
 
 sparql_query_prefixes = '''
-
 PREFIX iot-lite: <http://purl.oclc.org/NET/UNIS/fiware/iot-lite#>
-PREFIX m3-lite: <http://purl.oclc.org/iot/vocab/m3-lite#>
+PREFIX m3-lite: <http://purl.org/iot/vocab/m3-lite#>
 PREFIX ssn: <http://purl.oclc.org/NET/ssnx/ssn#>
 PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -15,50 +14,27 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX dul:  <http://www.loa.istc.cnr.it/ontologies/DUL.owl#>
 PREFIX time: <http://www.w3.org/2006/time#>
 PREFIX sics: <http://smart-ics.ee.surrey.ac.uk/fiesta-iot#>
-
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 '''
 
 sparql_query_select = '''
-
-SELECT ?sensingDevice ?dataValue ?dateTime
-
+SELECT DISTINCT ?sensingDevice ?qk ?lat ?long
 '''
 
 sparql_query_where = '''
 WHERE {
-	?sensingDevice a m3-lite:EnergyMeter .
-	?sensingDevice iot-lite:hasQuantityKind ?qk .
-	?qk a m3-lite:Power .
-	?sensingDevice iot-lite:hasUnit ?unit .
-	?device a ssn:Device .
-	?device ssn:onPlatform ?platform .
-	?platform geo:location ?point .
-	?point geo:lat ?lat .
-	?point geo:long ?long .
-	?observation ssn:observedBy ?sensingDevice .
-	?observation ssn:observationalResult ?sensorOutput .
-	?sensorOutput ssn:hasValue ?obsValue .
-	?obsValue dul:hasDataValue ?dataValue .
-	?observation ssn:observationSamplingTime ?instant .
-	?instant time:inXSDDateTime ?dateTime
-	.
-	#set interval
-	FILTER (
-			( xsd:dateTime(?dateTime) > xsd:dateTime("2018-02-15T00:00:00Z"))
-		&& 	( xsd:dateTime(?dateTime) < xsd:dateTime("2018-02-16T00:00:00Z"))
-	) 
-	#set location
-	.
-	FILTER (
-	       ( xsd:double(?lat) >= "0"^^xsd:double)
-	 &&    ( xsd:double(?lat) <= "60"^^xsd:double)
-	 &&    ( xsd:double(?long) >= "0"^^xsd:double)
-   &&    ( xsd:double(?long) >= "-6"^^xsd:double)
-	) .
+  ?sensingDevice iot-lite:hasQuantityKind/rdf:type ?qk .
+  values ?qk {m3-lite:Temperature m3-lite:AirTemperature m3-lite:RoomTemperature} .
+  ?sensingDevice iot-lite:isSubSystemOf ?device .
+  ?device a ssn:Device .
+  ?device ssn:onPlatform ?platform .
+  ?platform geo:location ?point .
+  ?point geo:lat ?lat .
+  ?point geo:long ?long
 }
 '''
 sparql_query_order = '''
-ORDER BY ?sensingDevice ASC(?dateTime)
+ORDER BY ?sensingDevice ASC(?platform)
 '''
 
 sparl_query_limit = '''
@@ -69,13 +45,19 @@ sparql_query =  sparql_query_prefixes + sparql_query_select + sparql_query_where
 
 fiesta_base_url = 'https://playground.fiesta-iot.eu/'
 sparql_endpoint = 'iot-registry/api/queries/execute/global'
+url = fiesta_base_url + sparql_endpoint
 
-sparql = SPARQLWrapper(fiesta_base_url + sparql_endpoint)
+sparql = SPARQLWrapper(url)
 
 sparql.setQuery(sparql_query)
 
 sparql.setReturnFormat(JSON)
 results = sparql.query().convert()
 
-for result in results["results"]["bindings"]:
-  print(result["label"]["value"])
+print(len(results))
+
+for result in results:
+	print(result['qk'])
+	print(result['lat'])
+	print(result['long'])
+	
