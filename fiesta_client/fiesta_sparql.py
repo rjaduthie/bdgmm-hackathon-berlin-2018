@@ -32,13 +32,25 @@ def Select(*variables, distinct=False):
     return select
 
 
-def Where(*conditions):
+def Where(*conditions,filters=None):
     where = "WHERE {"+"\n"
     for cond in conditions:
-        where += cond+" .\n"
+      where += cond+" .\n"
+    
+    if filters:
+      where += filters
     
     where += "}"+"\n"
     return where
+
+
+def FilterByTime(time_variable_str, datetime_from, datetime_to):
+  filter = "FILTER ("+"\n"
+  filter += '  ( xsd:dateTime(?%s) > xsd:dateTime("%s")) \n' % (time_variable_str, datetime_from.strftime("%Y-%m-%dT%H:%M:%SZ"))
+  filter += '  &&  ( xsd:dateTime(?%s) < xsd:dateTime("%s")) \n' % (time_variable_str, datetime_to.strftime("%Y-%m-%dT%H:%M:%SZ"))
+  filter += ") ."+"\n" 
+  
+  return filter
 
 def OrderByAsc(variable=None):
     if variable is not None:
@@ -53,8 +65,9 @@ def Limit(Limit=1000000):
     else:
         return ""
 
-def SubmitQuery(sparql_query):
-
+def SubmitQuery(sparql_query, time_range):
+  
+  
   # create headers for authorization
   # request token
   auth_headers = {'Content-Type':'application/json','X-OpenAM-Username':os.getenv('FIESTA_USERNAME'),'X-OpenAM-Password':os.getenv('FIESTA_PASSWORD')}
@@ -64,9 +77,13 @@ def SubmitQuery(sparql_query):
   if 'tokenId' not in token_dict:
       sys.exit(1)
   token = token_dict['tokenId']
-  
+ 
   query_headers = {'iPlanetDirectoryPro':token, 'Content-Type':'text/plain', 'Accept':'application/json'}
-  query_response = requests.post(sparql_url, data=sparql_query, headers=query_headers)
+  
+  if len(time_range) == 2:
+    date_params = {'from':time_range[0].strftime('%Y%m%d%H%M%S'),'to':time_range[1].strftime('%Y%m%d%H%M%S')}
+  
+  query_response = requests.post(sparql_url, params = date_params, data=sparql_query, headers=query_headers)
   query_results = query_response.json()
 
   return query_results
