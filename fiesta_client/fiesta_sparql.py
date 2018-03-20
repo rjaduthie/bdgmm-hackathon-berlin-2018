@@ -1,3 +1,9 @@
+import os, requests
+
+# create endpoint (although will probably not change)
+fiesta_base_url = 'https://playground.fiesta-iot.eu/'
+sparql_endpoint = 'iot-registry/api/queries/execute/global'
+sparql_url = fiesta_base_url + sparql_endpoint
 
 # add all the prefixes to all queries
 prefixes = '''
@@ -13,7 +19,7 @@ PREFIX sics: <http://smart-ics.ee.surrey.ac.uk/fiesta-iot#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 '''
 
-def select(*variables, distinct=False):
+def Select(*variables, distinct=False):
     select = "SELECT"
     if distinct:
         select += " DISTINCT"
@@ -26,23 +32,41 @@ def select(*variables, distinct=False):
     return select
 
 
-def where(*conditions):
+def Where(*conditions):
     where = "WHERE {"+"\n"
-    for cond in conditions
+    for cond in conditions:
         where += cond+" .\n"
     
     where += "}"+"\n"
     return where
 
-def order_by_asc(variable=None):
+def OrderByAsc(variable=None):
     if variable is not None:
         return "ORDER BY ASC(?%s)" % variable
     else:
         return ""
 
 
-def limit(limit=1000000):
-    if type(limit) is int:
-        return "LIMIT %i" % limit
+def Limit(Limit=1000000):
+    if type(Limit) is int:
+        return "LIMIT %i" % Limit
     else:
         return ""
+
+def SubmitQuery(sparql_query):
+
+  # create headers for authorization
+  # request token
+  auth_headers = {'Content-Type':'application/json','X-OpenAM-Username':os.getenv('FIESTA_USERNAME'),'X-OpenAM-Password':os.getenv('FIESTA_PASSWORD')}
+  auth_url = 'https://platform.fiesta-iot.eu/openam/json/authenticate'
+  auth_response = requests.post(auth_url, headers=auth_headers)
+  token_dict = auth_response.json()
+  if 'tokenId' not in token_dict:
+      sys.exit(1)
+  token = token_dict['tokenId']
+  
+  query_headers = {'iPlanetDirectoryPro':token, 'Content-Type':'text/plain', 'Accept':'application/json'}
+  query_response = requests.post(sparql_url, data=sparql_query, headers=query_headers)
+  query_results = query_response.json()
+
+  return query_results

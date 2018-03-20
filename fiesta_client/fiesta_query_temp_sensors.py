@@ -9,7 +9,7 @@ import fiesta_sparql as fsparql
 # build SPARQL query
 
 sparql_query = fsparql.prefixes
-sparql_query += fsparql.select('sensingDevice','lat','long','qk',distinct=True)
+sparql_query += fsparql.Select('sensingDevice','lat','long','qk',distinct=True)
 where_conditions = ['?sensingDevice iot-lite:hasQuantityKind/rdf:type ?qk',
                     'values ?qk {m3-lite:Temperature m3-lite:AirTemperature m3-lite:RoomTemperature}',
                     '?sensingDevice iot-lite:isSubSystemOf ?device',
@@ -19,31 +19,10 @@ where_conditions = ['?sensingDevice iot-lite:hasQuantityKind/rdf:type ?qk',
                     '?point geo:lat ?lat',
                     '?point geo:long ?long']
 
-sparql_query += fsparql.where(*where_conditions)
-sparql_query += fsparql.order_by_asc('long') #order east to west
+sparql_query += fsparql.Where(*where_conditions)
+sparql_query += fsparql.OrderByAsc('long') #order east to west
 
-# create endpoint (although will probably not change)
-fiesta_base_url = 'https://playground.fiesta-iot.eu/'
-sparql_endpoint = 'iot-registry/api/queries/execute/global'
-query_url = fiesta_base_url + sparql_endpoint
-
-# create headers for authorization
-# request token
-# curl  --request POST --header "Content-Type: application/json"  --header "X-OpenAM-Username: $FIESTA_USERNAME"  --header "X-OpenAM-Password: $FIESTA_PASSWORD" --data "{}" https://platform.fiesta-iot.eu/openam/json/authenticate > fiesta-token.json
-auth_headers = {'Content-Type':'application/json','X-OpenAM-Username':os.getenv('FIESTA_USERNAME'),'X-OpenAM-Password':os.getenv('FIESTA_PASSWORD')}
-auth_url = 'https://platform.fiesta-iot.eu/openam/json/authenticate'
-auth_response = requests.post(auth_url, headers=auth_headers)
-token_dict = auth_response.json()
-if 'tokenId' not in token_dict:
-    sys.exit(1)
-
-token = token_dict['tokenId']
-
-query_headers = {'iPlanetDirectoryPro':token, 'Content-Type':'text/plain', 'Accept':'application/json'}
-
-query_response = requests.post(query_url, data=sparql_query, headers=query_headers)
-
-query_results = query_response.json()
+query_results = fsparql.SubmitQuery(sparql_query)
 
 if 'items' not in query_results:
     sys.exit(1)
